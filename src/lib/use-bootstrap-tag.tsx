@@ -9,6 +9,7 @@ interface UseBootstrapTagReturnType {
   getValue: () => string
   getValues: () => string[]
   addValue: (value: string | string[]) => void
+  addReadonlyValue: (value: string | string[]) => void
   removeValue: (value: string | string[]) => void
 }
 
@@ -27,6 +28,7 @@ export default function UseBootstrapTag(element: Element | HTMLElement | null): 
 
   // Config
   const dataset = target.dataset
+  const readonlySet = new Set<string>()
   const config = {
     separator: dataset.ubTagSeparator || ',',
     variant: dataset.ubTagVariant || 'secondary',
@@ -144,12 +146,20 @@ export default function UseBootstrapTag(element: Element | HTMLElement | null): 
       insert.length > 0 && tags().forEach(animateTag)
     }
   }
+  const addReadonlyValue = (value: string | string[]): void => {
+    const insert = processData(value, config.separator)
+    readonlySet.clear() // Optional: depends if you want to reset previous readonly tags
+    insert.forEach(v => readonlySet.add(v))
+    addValue(insert)
+  }
   const removeValue = (value: string | string[]): void => {
     const values = getValues()
     const remove = processData(value, config.separator)
     remove.forEach((i) => {
-      pull(values, i)
-      colorMap.delete(i)
+      if (!readonlySet.has(i)) {
+        pull(values, i)
+        colorMap.delete(i)
+      }
     })
     if (!arraysAreEqual(getValues(), values)) {
       change(target, values.join(config.separator))
@@ -231,7 +241,7 @@ export default function UseBootstrapTag(element: Element | HTMLElement | null): 
         setFocus(false)
       }
       tag.onkeydown = ({ key }) => {
-        if (key === 'Backspace' || key === 'Delete') {
+        if ((key === 'Backspace' || key === 'Delete') && !readonlySet.has(value)) {
           removeByIndex(index)
           const nextFocus = key === 'Backspace' ? index - 1 : values().length === index ? -1 : index
           if (nextFocus === -1) {
@@ -242,7 +252,7 @@ export default function UseBootstrapTag(element: Element | HTMLElement | null): 
           }
         }
       }
-      if (!disabled) {
+      if (!disabled && !readonlySet.has(value)) {
         const span = closeTagElement.cloneNode(true) as typeof closeTagElement
         span.onclick = () => {
           removeByIndex(index)
@@ -306,5 +316,5 @@ export default function UseBootstrapTag(element: Element | HTMLElement | null): 
   })
   target.addEventListener('focus', textFocus)
 
-  return { getValue, getValues, addValue, removeValue }
+  return { getValue, getValues, addValue, removeValue, addReadonlyValue }
 }

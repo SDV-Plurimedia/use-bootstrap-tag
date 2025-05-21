@@ -99,6 +99,7 @@ data-ub-tag-rainbow
 | removeValue  | string \| array | void    | `example.removeValue('react')`<br/>`example.removeValue('vue,svelte')`<br/>`example.removeValue(['solid', 'qwik'])`    |
 | getValue  | null            | string  | `example.getValue()`  |
 | getValues | null            | array   | `example.getValues()` |
+| addReadonlyValue | string \| array | void    | `example.addReadonlyValue('react')`<br/>`example.addReadonlyValue('vue,svelte')`<br/>`example.addReadonlyValue(['solid', 'qwik'])`    |
 
 ## License
 
